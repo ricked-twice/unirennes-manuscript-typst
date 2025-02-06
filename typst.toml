@@ -1,10 +1,10 @@
 # for a description of available keys, see https://github.com/typst/packages/?tab=readme-ov-file#package-format
 
 [package]
-name = ""
+name = "unirennes-manuscript"
 version = "0.1.0"
 entrypoint = "src/lib.typ"
-authors = []
+authors = ["Thimothé Albouy", "Augustin Godinot <augustin.godinot@inria.fr>"]
 license = "Unlicense"
 description = ""
 homepage = ""
@@ -13,18 +13,11 @@ keywords = []
 categories = []
 disciplines = []
 # compiler = ""
-exclude = [
-	".github",
-	"docs",
-	"scripts",
-	"tests",
-	".typstignore",
-	"Justfile",
-]
+exclude = [".github", "docs", "scripts", "tests", ".typstignore", "Justfile"]
 
-# [template]
-# path = "template"
-# entrypoint = "main.typ"
+[template]
+path = "template"
+entrypoint = "main.typ"
 # thumbnail = "thumbnail.png"
 
 # [tool.mytool]
