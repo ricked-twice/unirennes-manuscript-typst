@@ -48,7 +48,7 @@ jobs:
 
       - name: Build package
         run: |
-          just doc
+          # just doc
           just package out
 
       - name: Checkout package registry
