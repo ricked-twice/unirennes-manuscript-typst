@@ -248,6 +248,7 @@
   defense-date: "",
   thesis-number: "",
   draft: true,
+  body-paper: "a4",
   body,
 ) = {
   // ------------ GENERAL SETTINGS ------------ //
@@ -261,7 +262,7 @@
   set text(font: main-font, size: 10pt, fill: black, lang: "en")
 
   set page(
-    "a5",
+    body-paper,
     // ------------ MARGINS ------------ //
     margin: (outside: 15mm, inside: 20mm, top: 15mm, bottom: 15mm),
 
