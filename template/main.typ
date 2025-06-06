@@ -1,11 +1,10 @@
 
 #import "@local/unirennes-manuscript:0.1.1": *
 
-#show: matisse-thesis.with(
+#let info = (
   // Author information
   author: "« Prénom NOM »", // Must be a string (and not content), as it is used as PDF metadata
   affiliation: [« voir README et le site de de votre école doctorale »],
-
   // Jury information
   jury: (
     president: ("Prénom NOM", "Fonction et établissement d’exercice"),
@@ -23,7 +22,6 @@
       ("Prénom NOM", "Fonction et établissement d’exercice"),
     ),
   ),
-
   // Supervisors information
   supervision: (
     directeurs: (
@@ -35,32 +33,42 @@
       ("Prénom NOM", "Fonction et établissement d’exercice"),
     ), // Co-encadrant.e.s de thèse (dans le cas d'une CIFRE par exemple), peut être vide
   ),
-
   // TODO: put this outside the template initialization
   acknowledgements: [
     Je tiens à remercier
     I would like to thank. my parents..
     J’adresse également toute ma reconnaissance à ... .
   ],
-
   // Thesis defense information
   defense-place: [« Lieu »],
   defense-date: [« date »],
   thesis-number: [« If required »], // Otherwise, remove this line
-  draft: false, // If true, prepends the title with "Draft"
-
+  no-cover: false, // If true, does not add doctoral school pages
   // french info
   title-fr: [« Titre de la thèse »],
   keywords-fr: [de 3 à 6 mots clefs],
   abstract-fr: lorem(150),
-
   // english info
   title-en: [« Title of the manuscript »],
   keywords-en: [3 to 6 keywords],
   abstract-en: lorem(150),
 )
+#show: matisse-thesis.with(..info)
 
-#outline()
+// Print the matisse cover
+#cover(..info)
+
+// Print the aknowledgements, list of figures, ...
+#preamble(
+  inscription: [To twotwo you Too],
+  acknowlegments: [
+    *Acknowledgements*
+
+    Thanks a lot
+
+    TODO: style acknowledgements
+  ],
+)
 
 #part[Doctoral College]
 
@@ -100,3 +108,9 @@ Instructions on the modifiable parameters of the coverage model provided by the 
 - *Keywords in English:* They are used for reporting the thesis in international databases and for OAI harvesting.
 - *The title and address of the unit or laboratory to which it is attached:* If they do not appear on the title page, respecting the forms prescribed by the defence institution
 
+= Using this theme
+Look at the docs #emoji.face.smile
+
+
+// Print the matisse back cover
+#back(..info)

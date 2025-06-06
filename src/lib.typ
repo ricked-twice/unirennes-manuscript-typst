@@ -8,9 +8,20 @@
 #let school-color-verso = rgb("0054a0")
 #let cover-page-margins = (left: 20mm, right: 20mm, top: 10mm, bottom: 10mm)
 
-#let cover-font = "Helvetica"
-#let main-font = "Newsreader"
-#let title-font = "UniRennes"
+
+#let font = (
+  title: "UniRennes",
+  text: "Newsreader",
+  decorated: "UniRennes Inline",
+  cover: "Helvetica",
+)
+#let font-size = (
+  text: 10pt,
+  chapter-supplement: 48pt,
+  chapter-title: 28pt,
+  part-supplement: 25pt,
+  part-title: 28pt,
+)
 
 #let logo-header = block(
   // width: 70% + page-margins.left + page-margins.right,
@@ -27,6 +38,7 @@
   ),
 )
 
+/// Cover page, as specified by the Doctoral School
 #let cover(
   title-en: "",
   title-fr: "",
@@ -37,6 +49,7 @@
   jury: (),
   supervision: (),
   thesis-number: "",
+  ..args,
 ) = {
   set page(
     "a4",
@@ -44,7 +57,7 @@
     header: none,
     numbering: none,
   )
-  set text(font: cover-font, fill: black)
+  set text(font: font.cover, fill: black)
 
   let logo-overhang = (x: 7mm, y: -15mm)
   [#logo-header<cover:logos>]
@@ -53,7 +66,7 @@
   // When exporting to PDF, the transparency of the gradients is lost, thus we
   // need to use the fix suggested in
   // https://forum.typst.app/t/is-there-a-workaround-for-having-transparent-gradients-in-pdf-exports/1036
-  // while the issue https://github.com/typst/typst/issues/5774 is not fixed
+  // while the issue https://github.com/typst/typst/issues/2546 is not fixed
   // place(dx: -20mm, dy: 30mm, cover-bg(school-color-recto))
   context {
     place(
@@ -172,13 +185,22 @@
   pagebreak()
 }
 
-#let abstracts(
-  title-fr: "",
-  keywords-fr: "",
+
+/// Back cover, as specified by the Doctoral School
+#let back(
+  /// Title of the manuscript in French. -> content
+  title-fr: [],
+  /// Keywords of the thesis in French. -> content
+  keywords-fr: [],
+  /// Abstract of the thesis in French. -> content
   abstract-fr: [],
-  title-en: "",
-  keywords-en: "",
+  /// Title of the manuscript in English. -> content
+  title-en: [],
+  /// Keywords of the manuscript in English. -> content
+  keywords-en: [],
+  /// Abstract of the manuscript in English. -> content
   abstract-en: [],
+  ..args,
 ) = {
   // Set the page dimensions and skip the required number of pages
   set page(
@@ -236,6 +258,33 @@
 // sugar and are numbered independently of parts.
 #let part(title) = heading(level: 1, outlined: true, numbering: "I", title)
 
+
+/// The acknowlegments, abstract and table of content/figures/...
+#let preamble(inscription: none, acknowlegments: none) = {
+  // Do not count the contents as a chapters.
+  set page(header: none, numbering: "i")
+  show heading: set heading(numbering: none, outlined: false)
+
+  if inscription != none {
+    pagebreak(weak: true, to: "odd")
+    set align(horizon + right)
+    set text(style: "italic")
+    inscription
+  }
+  if acknowlegments != none {
+    pagebreak(weak: true)
+
+    acknowlegments
+  }
+
+  // -------- OUTLINE -------- //
+  // Chapter titles in bold
+  show outline.entry.where(level: 1): set text(weight: "bold")
+  outline(title: [Table of contents])
+}
+
+
+/// The theme entry point. Usage: `show: mathisse-thesis(args)`
 #let matisse-thesis(
   author: "",
   affiliation: "",
@@ -251,24 +300,22 @@
   defense-place: "",
   defense-date: "",
   thesis-number: "",
-  draft: true,
   body-paper: "a4",
+  no-cover: false,
   body,
 ) = {
-  // ------------ GENERAL SETTINGS ------------ //
-  let draft-string = ""
-  if draft { draft-string = "DRAFT - " }
+  //////////////////////////////////////////////////////////////////////////////
+  /// GENERAL SETTINGS
   set document(
     author: author,
-    title: draft-string + title-en,
+    title: title-en,
   )
-  set par(justify: true)
-  set text(font: main-font, size: 10pt, fill: black, lang: "en")
+
 
   set page(
     body-paper,
     // ------------ MARGINS ------------ //
-    margin: (outside: 15mm, inside: 20mm, top: 15mm, bottom: 15mm),
+    margin: (outside: 15mm, inside: 20mm, top: 20mm, bottom: 15mm),
 
     // ------------ PAGE NUMBERS ------------ //
     numbering: "1",
@@ -332,9 +379,7 @@
   set heading(
     offset: 1,
     // Custom function Numbering to avoid printing parts
-    numbering: (..nums) => {
-      nums.pos().slice(1).map(str).join(".")
-    },
+    numbering: (..nums) => numbering("1.", ..nums.pos().slice(1)),
   )
 
   // By convention, level 1 headings are parts
@@ -345,13 +390,12 @@
     pagebreak(to: "odd")
 
     text(
-      size: 24pt,
-      weight: "regular",
-      font: "UniRennes Inline",
+      size: font-size.part-supplement,
+      font: font.decorated,
       smallcaps[#it.supplement #it.numbering],
     )
     v(0.5cm)
-    text(smallcaps(it.body), font: title-font, size: 28pt)
+    text(smallcaps(it.body), font: font.title, size: font-size.part-title)
   }
 
   // By convention, level 2 headings are chapters
@@ -370,22 +414,30 @@
       let sec-nb = counter(heading).get().at(1)
       let fmt-nb = numbering("1.1", sec-nb)
       text(
-        size: 24pt,
+        size: font-size.chapter-supplement,
         weight: "regular",
-        font: "UniRennes Inline",
+        font: font.decorated,
         smallcaps[#heading.supplement #fmt-nb],
       )
     }
-    parbreak()
+    linebreak()
+    v(.00cm)
 
     // Heading name
-    text(smallcaps(it.body), font: title-font, size: 28pt)
+    text(smallcaps(it.body), font: font.title, size: font-size.chapter-title)
     set align(left)
 
     // horizontal rule
     line(length: 100%, stroke: .2mm)
     v(.7cm)
   }
+
+  // ----------- TEXT ----------- //
+  set par(justify: true)
+  set text(font: font.text, size: font-size.text, fill: black, lang: "en")
+  // Current NewsReader font file does not support small caps
+  show smallcaps: it => fakesc(it)
+
 
   // ------------ FIGURES ------------ //
   show figure.caption: it => box(
@@ -426,7 +478,6 @@
   }
 
   // ------------ MATH ------------ //
-  // will be available in 0.12
   show math.equation: it => {
     // small caps with a compliant font
     show smallcaps: set text(font: "Libertinus Serif")
@@ -446,30 +497,6 @@
   // ------------ BIBLIOGRAPHY ------------ //
   set bibliography(style: "association-for-computing-machinery")
 
-  // ------------ COVER PAGE ------------ //
-  cover(
-    title-en: draft-string + title-en,
-    title-fr: draft-string + title-fr,
-    author: author,
-    affiliation: affiliation,
-    defense-place: defense-place,
-    defense-date: defense-date,
-    thesis-number: thesis-number,
-    jury: jury,
-    supervision: supervision,
-  )
-
   // ------------ BODY ------------ //
   body
-  pagebreak(to: "odd")
-
-  // ------------ ABSTRACT ------------ //
-  abstracts(
-    title-fr: title-fr,
-    keywords-fr: keywords-fr,
-    abstract-fr: abstract-fr,
-    title-en: title-en,
-    keywords-en: keywords-en,
-    abstract-en: abstract-en,
-  )
 }
