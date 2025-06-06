@@ -232,43 +232,9 @@
   pagebreak(to: "even")
 }
 
-// Function similar to the `\part` function in the LaTeX template.
-#let part(
-  title: "",
-) = {
-  set heading(level: 1, outlined: true, numbering: "I")
-  show heading: none
-  set page(
-    "a4",
-    // ------------ MARGINS ------------ //
-    margin: (outside: 15mm, inside: 20mm, top: 15mm, bottom: 15mm),
-
-    // ------------ PAGE NUMBERS ------------ //
-    numbering: none,
-    header: none,
-  )
-
-  pagebreak(to: "odd")
-
-  set align(center)
-
-  v(1fr)
-  heading(title, supplement: [Part])
-  // Getting the current part
-  let current-part = context {
-    let current-part = numbering("I", counter(heading).at(here()).first())
-    [Part #current-part.]
-  }
-  text(
-    size: 24pt,
-    weight: "regular",
-    font: "UniRennes Inline",
-    smallcaps[#current-part],
-  )
-  v(0.5cm)
-  text(smallcaps(title), font: title-font, size: 28pt)
-  v(1fr)
-}
+// Divide the manuscript into parts. The Chapters still use the `= ` syntactic
+// sugar and are numbered independently of parts.
+#let part(title) = heading(level: 1, outlined: true, numbering: "I", title)
 
 #let matisse-thesis(
   author: "",
@@ -371,13 +337,31 @@
     },
   )
 
+  // By convention, level 1 headings are parts
+  show heading.where(level: 1): set heading(supplement: [Part])
+  show heading.where(level: 1): it => {
+    set page(numbering: none, header: none)
+    set align(center + horizon)
+    pagebreak(to: "odd")
+
+    text(
+      size: 24pt,
+      weight: "regular",
+      font: "UniRennes Inline",
+      smallcaps[#it.supplement #it.numbering],
+    )
+    v(0.5cm)
+    text(smallcaps(it.body), font: title-font, size: 28pt)
+  }
+
   // By convention, level 2 headings are chapters
   show heading.where(level: 2): set heading(supplement: [Chapter])
-
-  // Setup how the chapter titles are displayed
   show heading.where(level: 2): it => context {
-    // always start on odd pages
-    pagebreak(to: "odd")
+    // always start on odd pages and make sure that there is no headers on hte blank pages
+    {
+      set page(numbering: none, header: none)
+      pagebreak(to: "odd")
+    }
     set align(right)
 
     // Whether or not to display the chapter number/supplement "Chapter X". E.g.
@@ -406,9 +390,6 @@
   // ------------ FIGURES ------------ //
   show figure.caption: it => box(
     inset: (left: 1em, right: 1em),
-    // align(left)[
-    //   *#it.supplement~#it.numbering#it.separator*#it.body
-    // ]
     align(left, it),
   )
 

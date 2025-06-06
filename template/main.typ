@@ -62,7 +62,7 @@
 
 #outline()
 
-#part(title: "Doctoral College")
+#part[Doctoral College]
 
 = Doctoral College #linebreak() instructions
 The Doctoral Colledge instructions can be found here: #link("https://www.doctorat-bretagne.fr/sites/www.doctorat-bretagne.fr/files/medias/files/CoverThesisInstructions.pdf").
