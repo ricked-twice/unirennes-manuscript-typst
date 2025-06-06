@@ -1,5 +1,5 @@
 
-#import "@local/unirennes-manuscript:0.1.1": *
+#import "@local/unirennes-manuscript:0.2.0": *
 
 #let info = (
   // Author information
