@@ -232,6 +232,44 @@
   pagebreak(to: "even")
 }
 
+// Function similar to the `\part` function in the LaTeX template.
+#let part(
+  title: "",
+) = {
+  set heading(level: 1, outlined: true, numbering: "I")
+  show heading: none
+  set page(
+    "a4",
+    // ------------ MARGINS ------------ //
+    margin: (outside: 15mm, inside: 20mm, top: 15mm, bottom: 15mm),
+
+    // ------------ PAGE NUMBERS ------------ //
+    numbering: none,
+    header: none,
+  )
+
+  pagebreak(to: "odd")
+
+  set align(center)
+
+  v(1fr)
+  heading(title, supplement: [Part])
+  // Getting the current part
+  let current-part = context {
+    let current-part = numbering("I", counter(heading).at(here()).first())
+    [Part #current-part.]
+  }
+  text(
+    size: 24pt,
+    weight: "regular",
+    font: "UniRennes Inline",
+    smallcaps[#current-part],
+  )
+  v(0.5cm)
+  text(smallcaps(title), font: title-font, size: 28pt)
+  v(1fr)
+}
+
 #let matisse-thesis(
   author: "",
   affiliation: "",
@@ -248,6 +286,7 @@
   defense-date: "",
   thesis-number: "",
   draft: true,
+  body-paper: "a4",
   body,
 ) = {
   // ------------ GENERAL SETTINGS ------------ //
@@ -261,7 +300,7 @@
   set text(font: main-font, size: 10pt, fill: black, lang: "en")
 
   set page(
-    "a5",
+    body-paper,
     // ------------ MARGINS ------------ //
     margin: (outside: 15mm, inside: 20mm, top: 15mm, bottom: 15mm),
 
@@ -278,17 +317,17 @@
       let current-page = here().page()
       // let current-page = counter(page).get().first()
 
-      // if the page starts a level-1 heading, display nothing
-      let all-lvl1 = query(heading.where(level: 1))
-      if all-lvl1.any(it => it.location().page() == current-page) {
+      // if the page starts a level-2 heading (i.e., chapters), display nothing
+      let all-chapters = query(heading.where(level: 2))
+      if all-chapters.any(it => it.location().page() == current-page) {
         return
       }
 
       // if the page is odd vs even
       if calc.odd(current-page) {
-        // display the last level-1 heading
+        // display the last level-2 heading (i.e., chapters)
         let header-content = hydra(
-          1,
+          2,
           display: (_, it) => {
             if it.numbering != none {
               let nb = counter(heading).at(it.location())
@@ -299,15 +338,15 @@
         )
         text(0.35cm, header-content)
       } else {
-        // display last level-2 heading (current page included)
+        // display last level-3 heading (current page included)
         let header-content = hydra(
-          2,
+          3,
           use-last: true,
           display: (_, it) => {
             if it.numbering == none [_ #it.body _] else {
               let nb = counter(heading).at(it.location())
               let nb-fmt = numbering(
-                it.numbering.replace(" ", "."),
+                it.numbering,
                 ..nb,
               )
               [_ #nb-fmt #it.body _]
@@ -324,13 +363,19 @@
   )
 
   // ------------ HEADINGS ------------ //
-  set heading(numbering: "1.1 ")
+  set heading(
+    offset: 1,
+    // Custom function Numbering to avoid printing parts
+    numbering: (..nums) => {
+      nums.pos().slice(1).map(str).join(".")
+    },
+  )
 
-  // By convention, level 1 headings are chapters
-  show heading.where(level: 1): set heading(supplement: [Chapter])
+  // By convention, level 2 headings are chapters
+  show heading.where(level: 2): set heading(supplement: [Chapter])
 
   // Setup how the chapter titles are displayed
-  show heading.where(level: 1): it => context {
+  show heading.where(level: 2): it => context {
     // always start on odd pages
     pagebreak(to: "odd")
     set align(right)
@@ -338,8 +383,8 @@
     // Whether or not to display the chapter number/supplement "Chapter X". E.g.
     // for the acknowledgements, we do not display it
     if it.numbering != none {
-      let sec-nb = counter(heading).get().first()
-      let fmt-nb = numbering(heading.numbering, sec-nb)
+      let sec-nb = counter(heading).get().at(1)
+      let fmt-nb = numbering("1.1", sec-nb)
       text(
         size: 24pt,
         weight: "regular",
@@ -368,13 +413,31 @@
   )
 
   // ------------ OUTLINE ------------ //
-  show outline.where(target: heading.where(outlined: true)): o => {
+  show outline: o => {
     show outline.entry.where(level: 1): e => {
       v(5mm, weak: true)
       strong(e)
     }
+    show outline.entry.where(level: 2): e => {
+      v(5mm, weak: true)
+      strong(e)
+    }
+    show outline.entry.where(level: 3): e => {
+      emph(e)
+    }
     o
   }
+  // Parts and Chapters should have the same indentation level on outline
+  set outline(
+    indent: n => {
+      if n == 0 or n == 1 {
+        0em
+      } else {
+        (n - 1) * 1em
+      }
+    },
+  )
+
   // disable linebreaks in outline
   show outline.entry: it => {
     show linebreak: none
