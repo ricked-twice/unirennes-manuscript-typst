@@ -1,5 +1,5 @@
 
-#import "@local/unirennes-manuscript:0.1.0": *
+#import "@local/unirennes-manuscript:0.1.1": *
 
 #show: matisse-thesis.with(
   // Author information

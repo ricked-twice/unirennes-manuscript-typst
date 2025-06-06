@@ -1,4 +1,4 @@
-#import "@preview/hydra:0.5.1": hydra
+#import "@preview/hydra:0.6.1": hydra
 
 #import "cover-bg.typ": cover-bg
 #import "abstracts-bg.typ": abstracts-bg
