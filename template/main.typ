@@ -108,6 +108,8 @@ Instructions on the modifiable parameters of the coverage model provided by the 
 - *Keywords in English:* They are used for reporting the thesis in international databases and for OAI harvesting.
 - *The title and address of the unit or laboratory to which it is attached:* If they do not appear on the title page, respecting the forms prescribed by the defence institution
 
+#part[How to use this theme]
+
 = Using this theme
 Look at the docs #emoji.face.smile
 

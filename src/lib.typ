@@ -4,6 +4,8 @@
 #import "abstracts-bg.typ": abstracts-bg
 #import "utils.typ": balanced-cols, fakesc
 
+#let chapter-counter = counter("chapters")
+
 #let school-color-recto = blue
 #let school-color-verso = rgb("0054a0")
 #let cover-page-margins = (left: 20mm, right: 20mm, top: 10mm, bottom: 10mm)
@@ -302,6 +304,7 @@
   thesis-number: "",
   body-paper: "a4",
   no-cover: false,
+  independent-chapter-counting: false,
   body,
 ) = {
   //////////////////////////////////////////////////////////////////////////////
@@ -402,7 +405,18 @@
   }
 
   // By convention, level 2 headings are chapters
-  show heading.where(level: 2): set heading(supplement: [Chapter])
+  show heading.where(level: 2): set heading(
+    supplement: [Chapter],
+    numbering: (..nums) => {
+      if independent-chapter-counting {
+        // Still needs to increment here
+        let current = chapter-counter.get().at(0) + 1
+        numbering("1.", ..(current, nums.pos().slice(2)).flatten())
+      } else {
+        numbering("1.", ..nums.pos().slice(1))
+      }
+    },
+  )
   show heading.where(level: 2): it => context {
     // always start on odd pages and make sure that there is no headers on hte blank pages
     {
@@ -414,7 +428,15 @@
     // Whether or not to display the chapter number/supplement "Chapter X". E.g.
     // for the acknowledgements, we do not display it
     if it.numbering != none {
-      let sec-nb = counter(heading).get().at(1)
+      // Increment the custom chapter counter in all cases
+      chapter-counter.step()
+      let sec-nb = if independent-chapter-counting {
+        // There is probably something to do to lose the `+ 1` here, but I can't find a way to do so.
+        // Final counter is still correct though
+        chapter-counter.get().at(0) + 1
+      } else {
+        counter(heading).get().at(1)
+      }
       let fmt-nb = numbering("1.1", sec-nb)
       text(
         size: font-size.chapter-supplement,
